@@ -240,20 +240,17 @@ const topicDetails: Record<string, TopicDetailData> = {
 
 function LearnHub({ onOpenTopic }: { onOpenTopic: (id: string) => void }) {
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex-1 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
 
-      {/* Page header */}
-      <div className="flex-shrink-0 px-5 pt-2 pb-3">
+      {/* Page header scrolls with the Learn hub content on the real web app. */}
+      <div className="px-5 pt-2 pb-3">
         <h1 className="font-display text-[36px] text-[#1C1C1A] leading-tight">Learn</h1>
         <p className="text-[18px] text-[#56524F] mt-1 leading-relaxed">
           Clear, trusted information about alcohol,{'\n'}ageing and Australian guidelines.
         </p>
       </div>
 
-      {/* Scrollable */}
-      <div className="flex-1 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
-
-        {/* Featured topic card */}
+      {/* Featured topic card */}
         <div className="px-5">
           <button
             className="w-full rounded-2xl overflow-hidden shadow-md text-left active:opacity-90 transition-opacity"
@@ -319,7 +316,6 @@ function LearnHub({ onOpenTopic }: { onOpenTopic: (id: string) => void }) {
           </p>
         </div>
 
-      </div>
     </div>
   )
 }

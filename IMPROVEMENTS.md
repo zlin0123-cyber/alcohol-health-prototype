@@ -114,3 +114,16 @@ These require later product/data/integration work and are not faked in this buil
 - Preserved the Alrecord browser title in `.figma/make/site.json`.
 - Date/time picker behaviour was intentionally left unchanged in this pass.
 
+## v2.2.1 Record mobile spacing
+
+- Removed the redundant Record Main subtitle “Choose a drink from below or add your own.”
+- Reclaimed the subtitle spacing without changing the Record two-column scrolling model.
+- Kept the Record title, help button, search, Scan Barcode, Add Manually, category rail, drink cards, and bottom navigation unchanged.
+
+
+## v2.2.2 — Learn Hub mobile scrolling
+
+- Changed the Learn Hub so its page header (`Learn` and introductory copy) scrolls together with the hub content on the deployed web app.
+- Kept Learn detail-page back navigation unchanged.
+- Kept the fixed global bottom navigation and existing bottom safe-area clearance unchanged.
+- No Record scrolling behavior was changed.

@@ -235,10 +235,9 @@ export default function RecordPage({
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
 
-      <div className="flex-shrink-0 px-5 pt-2 pb-3 flex items-start justify-between gap-3">
+      <div className="flex-shrink-0 px-5 pt-2 pb-2 flex items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-[34px] text-[#1C1C1A] leading-tight">Record a Drink</h1>
-          <p className="text-[17px] text-[#56524F] mt-1">Choose a drink from below or add your own.</p>
         </div>
         <button
           className="w-9 h-9 flex items-center justify-center rounded-full bg-[#F5F3EF] active:opacity-70 flex-shrink-0"
