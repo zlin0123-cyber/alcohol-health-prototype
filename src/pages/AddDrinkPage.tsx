@@ -1,6 +1,5 @@
 // v2
 import { useState, useRef } from 'react'
-import StatusBar from '@/components/StatusBar'
 import type { DrinkCategory, DrinkDefinition, NewDrinkRecordPayload } from '@/types/alcohol'
 import { calculateStandardDrinks, roundStandardDrinks } from '@/utils/alcohol'
 
@@ -223,7 +222,6 @@ function Step1({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
-      <StatusBar />
       <TopNav onBack={onBack} label={mode === 'edit' ? 'Back to My Drinks' : 'Back to Record'} />
 
       {/* Header */}
@@ -237,7 +235,7 @@ function Step1({
       {mode === 'add' && <ProgressBar step={1} />}
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-[88px]">
+      <div className="flex-1 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
         <div className="px-5">
 
           {/* Scan label card */}
@@ -572,7 +570,6 @@ function Step2({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <StatusBar />
       <TopNav onBack={onBack} label={backLabel} />
 
       {/* Header */}
@@ -586,7 +583,7 @@ function Step2({
       {showProgress && <ProgressBar step={2} />}
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-[88px]">
+      <div className="flex-1 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
         <div className="px-5">
 
           {/* Drink summary card */}

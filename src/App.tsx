@@ -4,7 +4,6 @@ import LearnPage from '@/pages/LearnPage'
 import RecordPage, { type RecordBrowseState } from '@/pages/RecordPage'
 import AddDrinkPage, { EditDrinkPage, ExistingDrinkConsumptionPage } from '@/pages/AddDrinkPage'
 import RecordResultPage from '@/pages/RecordResultPage'
-import StatusBar from '@/components/StatusBar'
 import type { ConsumptionRecord, DrinkDefinition, NewDrinkRecordPayload } from '@/types/alcohol'
 
 // ── Bottom nav icons ───────────────────────────────────────
@@ -75,7 +74,6 @@ const navIcons: Record<NavTab, React.ComponentType<{ active: boolean }>> = {
 function PlaceholderPage({ label }: { label: string }) {
   return (
     <div className="flex-1 flex flex-col">
-      <StatusBar />
       <div className="flex-1 flex flex-col items-center justify-center gap-3 pb-[68px]">
         <p className="font-display text-[28px] text-[#1C1C1A]">{label}</p>
         <p className="text-[14px] text-[#647280]">Coming soon</p>
@@ -251,7 +249,7 @@ export default function App() {
     : null
 
   return (
-    <div className="w-full h-full bg-white flex flex-col overflow-hidden max-w-[390px] mx-auto relative">
+    <div className="app-shell w-full bg-white flex flex-col overflow-hidden max-w-[390px] mx-auto relative">
       <div className="flex-1 flex flex-col overflow-hidden">
         {activeNav === 'Home' && <HomePage onNavigateLearn={navigateToLearn} onNavigateTab={navigateToTab} />}
         {activeNav === 'Learn' && <LearnPage key={learnPageKey} initialTopicId={learnTarget} />}
@@ -313,7 +311,7 @@ export default function App() {
         {activeNav === 'Awards' && <PlaceholderPage label="Awards" />}
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-[#E8E4DF] flex items-center justify-center pt-1.5 pb-2 z-10">
+      <div className="app-bottom-nav absolute bottom-0 left-0 right-0 bg-white border-t border-[#E8E4DF] flex items-center justify-center pt-1.5 z-10">
         {navItems.map((label) => {
           const Icon = navIcons[label]
           const active = activeNav === label

@@ -1,4 +1,3 @@
-import StatusBar from '@/components/StatusBar'
 import type { ConsumptionRecord } from '@/types/alcohol'
 import { getDailyStandardDrinkTotal, getWeeklyStandardDrinkTotal } from '@/utils/alcohol'
 
@@ -95,8 +94,7 @@ export default function RecordResultPage({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <StatusBar />
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-[88px]">
+      <div className="flex-1 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
         <div className="px-5 pt-5">
           <div className="flex items-center gap-4 mb-7">
             <CheckBadge />

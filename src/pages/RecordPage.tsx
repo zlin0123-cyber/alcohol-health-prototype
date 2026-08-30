@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import StatusBar from '@/components/StatusBar'
 import type { DrinkCategory, DrinkDefinition } from '@/types/alcohol'
 
 // ── Library data ───────────────────────────────────────────
@@ -235,7 +234,6 @@ export default function RecordPage({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
-      <StatusBar />
 
       <div className="flex-shrink-0 px-5 pt-2 pb-3 flex items-start justify-between gap-3">
         <div>
@@ -275,7 +273,7 @@ export default function RecordPage({
       </div>
 
       <div className="flex-1 flex overflow-hidden border-t border-[#EEEDF3]">
-        <div className="w-[30%] flex-shrink-0 overflow-y-auto hide-scrollbar border-r border-[#EEEDF3] bg-[#FAFAFA]">
+        <div className="app-scroll-nav-clearance w-[30%] flex-shrink-0 overflow-y-auto hide-scrollbar border-r border-[#EEEDF3] bg-[#FAFAFA]">
           {(['My Drinks', ...sideCategories] as RecordCategory[]).map((cat, index) => {
             const active = activeCategory === cat
             return (
@@ -291,7 +289,7 @@ export default function RecordPage({
           })}
         </div>
 
-        <div className="flex-1 overflow-y-auto hide-scrollbar pb-[88px]">
+        <div className="flex-1 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
           <div className="px-3 pt-3 pb-2 flex items-center justify-between">
             <p className="text-[14px] font-bold uppercase tracking-widest text-[#647280]">{listTitle}</p>
             <p className="text-[14px] text-[#647280]">{filteredDrinks.length} {filteredDrinks.length === 1 ? 'drink' : 'drinks'}</p>

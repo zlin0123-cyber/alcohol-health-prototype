@@ -1,5 +1,4 @@
 {
-  "title": "Alrecord",
   "description": "Track your alcohol consumption, learn about its effects, and analyze your drinking patterns to promote healthier habits and earn rewards.",
   "robots": {
     "index": false
@@ -7,5 +6,6 @@
   "accessibility": {
     "addBypassLinks": false,
     "ignoreReducedMotion": false
-  }
+  },
+  "title": "Alrecord"
 }

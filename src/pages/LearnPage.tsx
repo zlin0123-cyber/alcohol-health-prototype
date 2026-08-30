@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import StatusBar from '@/components/StatusBar'
 
 // ── Topic list icons ───────────────────────────────────────
 
@@ -242,7 +241,6 @@ const topicDetails: Record<string, TopicDetailData> = {
 function LearnHub({ onOpenTopic }: { onOpenTopic: (id: string) => void }) {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <StatusBar />
 
       {/* Page header */}
       <div className="flex-shrink-0 px-5 pt-2 pb-3">
@@ -253,7 +251,7 @@ function LearnHub({ onOpenTopic }: { onOpenTopic: (id: string) => void }) {
       </div>
 
       {/* Scrollable */}
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-[68px]">
+      <div className="flex-1 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
 
         {/* Featured topic card */}
         <div className="px-5">
@@ -335,7 +333,6 @@ function TopicDetail({ topicId, onBack }: { topicId: string; onBack: () => void 
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <StatusBar />
 
       {/* Back nav */}
       <button
@@ -347,7 +344,7 @@ function TopicDetail({ topicId, onBack }: { topicId: string; onBack: () => void 
       </button>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-[68px]">
+      <div className="flex-1 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
 
         {/* Hero */}
         <div className="px-5 pt-1">

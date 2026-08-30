@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react'
-import StatusBar from '@/components/StatusBar'
 
 // ── Feature icons ──────────────────────────────────────────
 
@@ -230,11 +229,10 @@ export default function HomePage({ onNavigateLearn, onNavigateTab }: HomePagePro
   }, [])
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden relative">
-      <StatusBar />
-
+    <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
+      <div className="flex-1 min-h-0 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
       {/* Page header */}
-      <div className="flex-shrink-0 px-5 pt-2 pb-3 flex items-center justify-between">
+      <div className="px-5 pt-3 pb-3 flex items-center justify-between">
         <h1 className="font-display text-[36px] text-[#1C1C1A] leading-tight">Home</h1>
         <button
           className="w-9 h-9 flex items-center justify-center rounded-full bg-[#F5F3EF] active:opacity-70 transition-opacity flex-shrink-0"
@@ -330,11 +328,11 @@ export default function HomePage({ onNavigateLearn, onNavigateTab }: HomePagePro
       </div>
 
       {/* Features */}
-      <div className="flex-1 flex flex-col px-5 pt-4 pb-[88px] overflow-hidden">
+      <div className="px-5 pt-4 pb-5">
         <h2 className="font-display text-[25px] leading-tight text-[#1C1C1A] mb-3">
           What you can do here
         </h2>
-        <div className="flex-1 flex flex-col justify-around">
+        <div className="flex flex-col gap-4">
           {features.map((f) => (
             <button
               key={f.title}
@@ -360,6 +358,7 @@ export default function HomePage({ onNavigateLearn, onNavigateTab }: HomePagePro
             </button>
           ))}
         </div>
+      </div>
       </div>
 
       {/* About modal */}
