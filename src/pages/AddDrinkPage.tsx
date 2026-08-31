@@ -72,7 +72,7 @@ function IcoChevronDown() {
 
 function ProgressBar({ step }: { step: 1 | 2 }) {
   return (
-    <div className="flex items-center px-8 py-4">
+    <div className="responsive-form-inner flex items-center px-8 py-4">
       {/* Step 1 circle */}
       <div className="flex flex-col items-center gap-1.5">
         <div className="w-9 h-9 rounded-full bg-[#1A5FCC] flex items-center justify-center">
@@ -112,7 +112,7 @@ function ProgressBar({ step }: { step: 1 | 2 }) {
 function TopNav({ onBack, label }: { onBack: () => void; label: string }) {
   return (
     <button
-      className="flex-shrink-0 h-12 flex items-center gap-2 px-5 active:opacity-70 transition-opacity"
+      className="responsive-form-inner flex-shrink-0 h-12 flex items-center gap-2 px-5 active:opacity-70 transition-opacity"
       onClick={onBack}
     >
       <BackArrow />
@@ -225,7 +225,7 @@ function Step1({
       <TopNav onBack={onBack} label={mode === 'edit' ? 'Back to My Drinks' : 'Back to Record'} />
 
       {/* Header */}
-      <div className="flex-shrink-0 px-5 pb-1">
+      <div className="responsive-form-inner flex-shrink-0 px-5 pb-1">
         <h1 className="font-display text-[30px] text-[#1C1C1A] leading-tight">{mode === 'edit' ? 'Edit Drink' : 'Add a Drink'}</h1>
         <p className="text-[15px] text-[#56524F] mt-1">
           {mode === 'edit' ? 'Update your saved drink details' : 'Step 1 of 2 · Save a drink to My Drinks'}
@@ -236,7 +236,7 @@ function Step1({
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
-        <div className="px-5">
+        <div className="responsive-form-inner px-5">
 
           {/* Scan label card */}
           {mode === 'add' && (
@@ -573,7 +573,7 @@ function Step2({
       <TopNav onBack={onBack} label={backLabel} />
 
       {/* Header */}
-      <div className="flex-shrink-0 px-5 pb-1">
+      <div className="responsive-form-inner flex-shrink-0 px-5 pb-1">
         <h1 className="font-display text-[30px] text-[#1C1C1A] leading-tight">Record Consumption</h1>
         <p className="text-[15px] text-[#56524F] mt-1">
           {showProgress ? 'Step 2 of 2 · Tell us how much you drank' : 'Tell us how much you drank'}
@@ -584,7 +584,7 @@ function Step2({
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
-        <div className="px-5">
+        <div className="responsive-form-inner px-5">
 
           {/* Drink summary card */}
           <div className="bg-[#F5F6F8] rounded-2xl p-4 flex items-center gap-4 mb-6">

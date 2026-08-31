@@ -249,8 +249,27 @@ export default function App() {
     : null
 
   return (
-    <div className="app-shell w-full bg-white flex flex-col overflow-hidden max-w-[390px] mx-auto relative">
-      <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="app-shell w-full bg-white flex flex-col overflow-hidden relative">
+      <aside className="app-side-nav" aria-label="Primary navigation">
+        <div className="app-side-nav-title">Menu</div>
+        {navItems.map((label) => {
+          const Icon = navIcons[label]
+          const active = activeNav === label
+          return (
+            <button
+              key={label}
+              className="app-side-nav-button"
+              data-active={active}
+              onClick={() => navigateToTab(label)}
+            >
+              <Icon active={active} />
+              <span className="app-side-nav-label">{label}</span>
+            </button>
+          )
+        })}
+      </aside>
+
+      <main className="app-main">
         {activeNav === 'Home' && <HomePage onNavigateLearn={navigateToLearn} onNavigateTab={navigateToTab} />}
         {activeNav === 'Learn' && <LearnPage key={learnPageKey} initialTopicId={learnTarget} />}
 
@@ -309,7 +328,7 @@ export default function App() {
 
         {activeNav === 'Trends' && <PlaceholderPage label="Trends" />}
         {activeNav === 'Awards' && <PlaceholderPage label="Awards" />}
-      </div>
+      </main>
 
       <div className="app-bottom-nav absolute bottom-0 left-0 right-0 bg-white border-t border-[#E8E4DF] flex items-center justify-center pt-1.5 z-10">
         {navItems.map((label) => {
@@ -318,7 +337,7 @@ export default function App() {
           return (
             <button
               key={label}
-              className="w-[72px] flex flex-col items-center gap-0 transition-opacity active:opacity-60"
+              className="flex-1 max-w-[88px] min-w-0 flex flex-col items-center gap-0 transition-opacity active:opacity-60"
               onClick={() => navigateToTab(label)}
             >
               <div

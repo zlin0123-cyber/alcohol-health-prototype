@@ -241,17 +241,19 @@ const topicDetails: Record<string, TopicDetailData> = {
 function LearnHub({ onOpenTopic }: { onOpenTopic: (id: string) => void }) {
   return (
     <div className="flex-1 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
+      <div className="learn-hub-content">
 
       {/* Page header scrolls with the Learn hub content on the real web app. */}
-      <div className="px-5 pt-2 pb-3">
+      <div className="px-5 md:px-0 pt-2 md:pt-5 pb-3">
         <h1 className="font-display text-[36px] text-[#1C1C1A] leading-tight">Learn</h1>
         <p className="text-[18px] text-[#56524F] mt-1 leading-relaxed">
           Clear, trusted information about alcohol,{'\n'}ageing and Australian guidelines.
         </p>
       </div>
 
+      <div className="learn-hub-grid mt-2">
       {/* Featured topic card */}
-        <div className="px-5">
+        <div className="learn-featured-wrap px-5">
           <button
             className="w-full rounded-2xl overflow-hidden shadow-md text-left active:opacity-90 transition-opacity"
             onClick={() => onOpenTopic('alcohol-ageing')}
@@ -281,7 +283,7 @@ function LearnHub({ onOpenTopic }: { onOpenTopic: (id: string) => void }) {
         </div>
 
         {/* Explore topics */}
-        <div className="mt-7 px-5">
+        <div className="learn-topics-wrap mt-7 px-5">
           <p className="text-[15px] font-bold uppercase tracking-widest text-[#647280] mb-3">
             Explore Topics
           </p>
@@ -307,14 +309,16 @@ function LearnHub({ onOpenTopic }: { onOpenTopic: (id: string) => void }) {
             ))}
           </div>
         </div>
+      </div>
 
         {/* Trust banner */}
-        <div className="mx-5 mt-6 mb-2 rounded-2xl bg-[#F0F4FF] p-4 flex items-center gap-3">
+        <div className="learn-trust-wrap mx-5 mt-6 mb-2 rounded-2xl bg-[#F0F4FF] p-4 flex items-center gap-3">
           <div className="flex-shrink-0"><ShieldCheck /></div>
           <p className="text-[17px] text-[#1C1C1A] leading-relaxed flex-1">
             All information on this site comes from trusted Australian health sources.
           </p>
         </div>
+      </div>
 
     </div>
   )
@@ -332,7 +336,7 @@ function TopicDetail({ topicId, onBack }: { topicId: string; onBack: () => void 
 
       {/* Back nav */}
       <button
-        className="flex-shrink-0 h-11 flex items-center gap-2 px-5 active:opacity-70 transition-opacity"
+        className="responsive-reading-inner flex-shrink-0 h-11 flex items-center gap-2 px-5 active:opacity-70 transition-opacity"
         onClick={onBack}
       >
         <BackArrow />
@@ -341,6 +345,7 @@ function TopicDetail({ topicId, onBack }: { topicId: string; onBack: () => void 
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
+        <div className="responsive-reading-inner">
 
         {/* Hero */}
         <div className="px-5 pt-1">
@@ -423,6 +428,7 @@ function TopicDetail({ topicId, onBack }: { topicId: string; onBack: () => void 
           </div>
         </div>
 
+        </div>
       </div>
     </div>
   )

@@ -95,7 +95,7 @@ export default function RecordResultPage({
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
-        <div className="px-5 pt-5">
+        <div className="responsive-reading-inner px-5 pt-5">
           <div className="flex items-center gap-4 mb-7">
             <CheckBadge />
             <div>
@@ -111,7 +111,7 @@ export default function RecordResultPage({
             <p className="text-[14px] text-[#56524F] mt-2">{record.drinkName} · {record.consumedMl} mL recorded</p>
           </div>
 
-          <div className="space-y-4 mb-5">
+          <div className="record-result-grid space-y-4 md:space-y-0 mb-5">
             <GuidelineCard
               label={dayLabel}
               total={dailyTotal}

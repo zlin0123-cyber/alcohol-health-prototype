@@ -62,7 +62,6 @@ function Chevron() {
 
 const CARD_W = 318
 const CARD_GAP = 12
-const SLIDE_STEP = CARD_W + CARD_GAP
 
 const slides = [
   {
@@ -162,7 +161,9 @@ export default function HomePage({ onNavigateLearn, onNavigateTab }: HomePagePro
     trackRef.current.style.transition = animated
       ? 'transform 1.1s cubic-bezier(0.25,0.46,0.45,0.94)'
       : 'none'
-    trackRef.current.style.transform = `translateX(${-slide * SLIDE_STEP + drag}px)`
+    const firstCard = trackRef.current.firstElementChild as HTMLElement | null
+    const slideStep = (firstCard?.getBoundingClientRect().width ?? CARD_W) + CARD_GAP
+    trackRef.current.style.transform = `translateX(${-slide * slideStep + drag}px)`
   }
 
   const applyDrag = (clientX: number, slide: number) => {
@@ -228,11 +229,17 @@ export default function HomePage({ onNavigateLearn, onNavigateTab }: HomePagePro
     return () => clearInterval(id)
   }, [])
 
+  useEffect(() => {
+    const syncToViewport = () => setTrackTransform(currentSlide, 0, false)
+    window.addEventListener('resize', syncToViewport)
+    return () => window.removeEventListener('resize', syncToViewport)
+  }, [currentSlide])
+
   return (
     <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
       <div className="flex-1 min-h-0 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
       {/* Page header */}
-      <div className="px-5 pt-3 pb-3 flex items-center justify-between">
+      <div className="responsive-shell-inner px-5 md:px-7 pt-3 md:pt-5 pb-3 flex items-center justify-between">
         <h1 className="font-display text-[36px] text-[#1C1C1A] leading-tight">Home</h1>
         <button
           className="w-9 h-9 flex items-center justify-center rounded-full bg-[#F5F3EF] active:opacity-70 transition-opacity flex-shrink-0"
@@ -244,7 +251,7 @@ export default function HomePage({ onNavigateLearn, onNavigateTab }: HomePagePro
       </div>
 
       {/* Carousel */}
-      <div className="flex-shrink-0 mt-2">
+      <div className="home-mobile-carousel flex-shrink-0 mt-2">
         <div
           className="overflow-hidden cursor-grab active:cursor-grabbing select-none"
           onTouchStart={onTouchStart}
@@ -264,7 +271,7 @@ export default function HomePage({ onNavigateLearn, onNavigateTab }: HomePagePro
               <div
                 key={slide.id}
                 className="flex-shrink-0 rounded-2xl overflow-hidden flex flex-col shadow-md"
-                style={{ width: `${CARD_W}px` }}
+                style={{ width: `min(${CARD_W}px, calc(100vw - 52px))` }}
               >
                 <div className="relative h-[212px] bg-[#C8C4BE]">
                   <img src={slide.image} alt={slide.alt} className="w-full h-full object-cover" draggable={false} />
@@ -327,16 +334,55 @@ export default function HomePage({ onNavigateLearn, onNavigateTab }: HomePagePro
         </div>
       </div>
 
+      {/* Wider screens use the available space instead of stretching the mobile carousel. */}
+      <div className="home-desktop-slides responsive-shell-inner">
+        {slides.map((slide) => (
+          <div key={`desktop-${slide.id}`} className="rounded-2xl overflow-hidden flex flex-col shadow-md bg-white min-w-0">
+            <div className="relative h-[170px] bg-[#C8C4BE]">
+              <img src={slide.image} alt={slide.alt} className="w-full h-full object-cover" draggable={false} />
+              {slide.label && (
+                <span
+                  className="absolute top-3 left-3 text-[12px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm"
+                  style={{ color: slide.labelColor }}
+                >
+                  {slide.label}
+                </span>
+              )}
+            </div>
+            <div className="flex-1 flex flex-col justify-between px-5 pt-4 pb-5" style={{ backgroundColor: slide.heroBg || '#FFFFFF' }}>
+              <p
+                className="font-display leading-snug"
+                style={{ fontSize: slide.id === 0 ? '22px' : '19px', color: slide.id === 0 ? '#FFFFFF' : '#1C1C1A' }}
+              >
+                {slide.title}
+              </p>
+              {slide.showLearnMore && slide.topicId && (
+                <button
+                  className="mt-4 self-start flex items-center gap-1 text-[16px] font-semibold tracking-wide active:opacity-70 transition-opacity"
+                  style={{ color: slide.labelColor || '#28605C' }}
+                  onClick={() => onNavigateLearn(slide.topicId!)}
+                >
+                  Learn more
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                    <path d="M2.5 7h9M8 3.5L11.5 7 8 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* Features */}
-      <div className="px-5 pt-4 pb-5">
+      <div className="responsive-shell-inner px-5 md:px-7 pt-4 pb-5">
         <h2 className="font-display text-[25px] leading-tight text-[#1C1C1A] mb-3">
           What you can do here
         </h2>
-        <div className="flex flex-col gap-4">
+        <div className="home-feature-grid flex flex-col gap-6">
           {features.map((f) => (
             <button
               key={f.title}
-              className="flex items-center gap-3.5 text-left active:opacity-70 transition-opacity"
+              className="home-feature-card flex items-center gap-3.5 text-left active:opacity-70 transition-opacity"
               onClick={() => {
                 if (f.nav === 'learn') onNavigateLearn()
                 else if (f.nav === 'record') onNavigateTab('Record')
