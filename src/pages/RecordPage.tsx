@@ -101,7 +101,7 @@ function DrinkItem({
   onDelete?: () => void
 }) {
   return (
-    <div className="bg-white">
+    <div className="record-drink-card bg-white">
       <button
         className="w-full flex items-center gap-3.5 px-3 py-4 active:bg-[#F7F8FA] transition-colors text-left"
         onClick={onSelect}
@@ -235,7 +235,7 @@ export default function RecordPage({
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
 
-      <div className="flex-shrink-0 px-5 pt-2 pb-2 flex items-start justify-between gap-3">
+      <div className="record-page-top flex-shrink-0 px-5 pt-2 pb-2 flex items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-[34px] text-[#1C1C1A] leading-tight">Record a Drink</h1>
         </div>
@@ -248,7 +248,7 @@ export default function RecordPage({
         </button>
       </div>
 
-      <div className="flex-shrink-0 px-4 pb-3 space-y-2">
+      <div className="record-controls flex-shrink-0 px-4 pb-3 space-y-2">
         <div className="flex items-center gap-2 bg-[#F5F6F8] rounded-xl px-3 h-10">
           <IcoSearch />
           <input
@@ -271,8 +271,8 @@ export default function RecordPage({
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden border-t border-[#EEEDF3]">
-        <div className="app-scroll-nav-clearance w-[30%] flex-shrink-0 overflow-y-auto hide-scrollbar border-r border-[#EEEDF3] bg-[#FAFAFA]">
+      <div className="record-workspace flex-1 flex overflow-hidden border-t border-[#EEEDF3]">
+        <div className="record-category-rail app-scroll-nav-clearance flex-shrink-0 overflow-y-auto hide-scrollbar border-r border-[#EEEDF3] bg-[#FAFAFA]">
           {(['My Drinks', ...sideCategories] as RecordCategory[]).map((cat, index) => {
             const active = activeCategory === cat
             return (
@@ -289,7 +289,7 @@ export default function RecordPage({
         </div>
 
         <div className="flex-1 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
-          <div className="px-3 pt-3 pb-2 flex items-center justify-between">
+          <div className="record-results-header px-3 pt-3 pb-2 flex items-center justify-between">
             <p className="text-[14px] font-bold uppercase tracking-widest text-[#647280]">{listTitle}</p>
             <p className="text-[14px] text-[#647280]">{filteredDrinks.length} {filteredDrinks.length === 1 ? 'drink' : 'drinks'}</p>
           </div>
@@ -299,7 +299,7 @@ export default function RecordPage({
           ) : filteredDrinks.length === 0 && normalizedQuery !== '' ? (
             <EmptySearch query={query} />
           ) : (
-            <div className="divide-y divide-[#F0F0F0]">
+            <div className="record-drink-grid divide-y divide-[#F0F0F0] md:divide-y-0">
               {filteredDrinks.map((drink) => {
                 const isCustom = activeCategory === 'My Drinks'
                 return (
