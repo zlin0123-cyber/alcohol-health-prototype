@@ -598,7 +598,7 @@ function HistoryTab({
         <div className="ht-empty-card">
           <h3>No drinking records for {MONTH_NAMES[viewMonth]}.</h3>
           <p>Records you add will appear here.</p>
-          {import.meta.env.DEV && onLoadPrototypeData && records.length === 0 && (
+          { onLoadPrototypeData && records.length === 0 && (
             <button className="ht-secondary-button" onClick={onLoadPrototypeData}>Load sample history</button>
           )}
         </div>
@@ -786,7 +786,7 @@ function TrendsTab({ records, onLoadPrototypeData }: Pick<Props, 'records' | 'on
         <div className="ht-empty-card">
           <h3>No trend data yet.</h3>
           <p>Record drinks to build your personal drinking trends.</p>
-          {import.meta.env.DEV && onLoadPrototypeData && (
+          { onLoadPrototypeData && (
             <button className="ht-secondary-button" onClick={onLoadPrototypeData}>Load sample history</button>
           )}
         </div>
@@ -914,7 +914,7 @@ function ReportTab({ records, onLoadPrototypeData }: Pick<Props, 'records' | 'on
             <div style={{ width: `${Math.min(100, (historySpanDays / 28) * 100)}%` }} />
           </div>
           <small>{Math.min(historySpanDays, 28)} of 28 days</small>
-          {import.meta.env.DEV && onLoadPrototypeData && (
+          { onLoadPrototypeData && (
             <button className="ht-secondary-button" onClick={onLoadPrototypeData}>Load 4-week sample history</button>
           )}
         </div>
