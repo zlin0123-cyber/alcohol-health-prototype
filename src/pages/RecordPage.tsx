@@ -190,6 +190,7 @@ function RecordHelp({ onClose }: { onClose: () => void }) {
 }
 
 export default function RecordPage({
+  onScanBarcode,
   onRecordManually,
   onSelectDrink,
   onEditDrink,
@@ -199,6 +200,7 @@ export default function RecordPage({
   initialQuery = '',
   onBrowseStateChange,
 }: {
+  onScanBarcode: () => void
   onRecordManually: () => void
   onSelectDrink: (drink: DrinkDefinition, source: RecordDrinkSource) => void
   onEditDrink: (drink: DrinkDefinition) => void
@@ -261,7 +263,7 @@ export default function RecordPage({
           {query !== '' && <button className="text-[#647280] text-[18px] leading-none min-w-8 min-h-8" onClick={() => updateQuery('')}>×</button>}
         </div>
         <div className="flex gap-2">
-          <button className="flex-1 flex items-center justify-center gap-1.5 h-14 rounded-xl bg-[#EEF4FF] active:opacity-75 transition-opacity" aria-label="Scan Barcode">
+          <button className="flex-1 flex items-center justify-center gap-1.5 h-14 rounded-xl bg-[#EEF4FF] active:opacity-75 transition-opacity" aria-label="Scan Barcode" onClick={onScanBarcode}>
             <IcoBarcode />
             <span className="text-[17px] font-semibold text-[#1A5FCC]">Scan Barcode</span>
           </button>

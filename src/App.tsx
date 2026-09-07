@@ -4,6 +4,8 @@ import LearnPage from '@/pages/LearnPage'
 import RecordPage, { type RecordBrowseState, type RecordDrinkSource } from '@/pages/RecordPage'
 import AddDrinkPage, { EditDrinkPage, ExistingDrinkConsumptionPage } from '@/pages/AddDrinkPage'
 import RecordResultPage from '@/pages/RecordResultPage'
+import BarcodeScannerPage from '@/pages/BarcodeScannerPage'
+import HistoryTrendsPage from '@/pages/HistoryTrendsPage'
 import type { ConsumptionRecord, DrinkDefinition, NewDrinkRecordPayload } from '@/types/alcohol'
 
 // ── Bottom nav icons ───────────────────────────────────────
@@ -87,7 +89,7 @@ function PlaceholderPage({ label }: { label: string }) {
 const MY_DRINKS_STORAGE_KEY = 'alcohol-health.my-drinks.v1'
 const CONSUMPTION_STORAGE_KEY = 'alcohol-health.consumption-records.v1'
 
-type RecordView = 'main' | 'manual' | 'consume' | 'edit' | 'result'
+type RecordView = 'main' | 'barcode' | 'manual' | 'consume' | 'edit' | 'result'
 
 function loadStoredArray<T>(key: string): T[] {
   if (typeof window === 'undefined') return []
@@ -99,6 +101,65 @@ function loadStoredArray<T>(key: string): T[] {
   } catch {
     return []
   }
+}
+
+
+
+function formatDateOnly(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function buildPrototypeHistory(): ConsumptionRecord[] {
+  const today = new Date()
+  const base = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const templates = [
+    { daysAgo: 1, name: "Jacob's Creek Shiraz", category: 'Wine' as const, abv: 13.5, ml: 150, type: 'Glass', time: '19:30', source: 'database' as const },
+    { daysAgo: 1, name: 'Corona Extra', category: 'Beer' as const, abv: 4.5, ml: 355, type: 'Bottle', time: '20:45', source: 'database' as const },
+    { daysAgo: 3, name: 'Asahi Super Dry', category: 'Beer' as const, abv: 5, ml: 330, type: 'Bottle', time: '20:15', source: 'database' as const },
+    { daysAgo: 5, name: 'Home Pour Whiskey', category: 'Spirits' as const, abv: 40, ml: 60, type: 'Glass', time: '21:10', source: 'manual' as const },
+    { daysAgo: 7, name: 'Great Northern', category: 'Beer' as const, abv: 3.5, ml: 375, type: 'Can', time: '18:40' },
+    { daysAgo: 9, name: 'Jacob\'s Creek Shiraz', category: 'Wine' as const, abv: 13.5, ml: 300, type: 'Glass', time: '19:50' },
+    { daysAgo: 11, name: 'Carlton Dry', category: 'Beer' as const, abv: 4.5, ml: 375, type: 'Can', time: '20:20' },
+    { daysAgo: 14, name: 'Jameson Whiskey', category: 'Spirits' as const, abv: 40, ml: 90, type: 'Glass', time: '21:30' },
+    { daysAgo: 16, name: 'Corona Extra', category: 'Beer' as const, abv: 4.5, ml: 355, type: 'Bottle', time: '19:20' },
+    { daysAgo: 18, name: 'Jacob\'s Creek Shiraz', category: 'Wine' as const, abv: 13.5, ml: 150, type: 'Glass', time: '20:05' },
+    { daysAgo: 21, name: 'Asahi Super Dry', category: 'Beer' as const, abv: 5, ml: 660, type: 'Bottle', time: '20:40' },
+    { daysAgo: 23, name: 'Great Northern', category: 'Beer' as const, abv: 3.5, ml: 375, type: 'Can', time: '18:55' },
+    { daysAgo: 25, name: 'Jameson Whiskey', category: 'Spirits' as const, abv: 40, ml: 60, type: 'Glass', time: '21:15' },
+    { daysAgo: 28, name: 'Jacob\'s Creek Shiraz', category: 'Wine' as const, abv: 13.5, ml: 300, type: 'Glass', time: '19:45' },
+    { daysAgo: 31, name: 'Corona Extra', category: 'Beer' as const, abv: 4.5, ml: 710, type: 'Bottle', time: '20:10' },
+    { daysAgo: 34, name: 'Carlton Dry', category: 'Beer' as const, abv: 4.5, ml: 375, type: 'Can', time: '19:35' },
+    { daysAgo: 38, name: 'Jacob\'s Creek Shiraz', category: 'Wine' as const, abv: 13.5, ml: 150, type: 'Glass', time: '20:00' },
+    { daysAgo: 42, name: 'Asahi Super Dry', category: 'Beer' as const, abv: 5, ml: 330, type: 'Bottle', time: '19:10' },
+    { daysAgo: 48, name: 'Jameson Whiskey', category: 'Spirits' as const, abv: 40, ml: 60, type: 'Glass', time: '21:05' },
+    { daysAgo: 52, name: 'Great Northern', category: 'Beer' as const, abv: 3.5, ml: 750, type: 'Can', time: '18:45' },
+  ]
+
+  return templates.map((item, index) => {
+    const date = new Date(base)
+    date.setDate(date.getDate() - item.daysAgo)
+    const standardDrinks = Math.round((item.ml * (item.abv / 100) * 0.789 / 10) * 100) / 100
+    return {
+      id: `prototype-history-${index + 1}`,
+      drinkId: `prototype-drink-${item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+      drinkName: item.name,
+      category: item.category,
+      abv: item.abv,
+      containerSizeMl: item.ml,
+      containerType: item.type,
+      mode: 'ml',
+      consumedMl: item.ml,
+      quantity: 1,
+      date: formatDateOnly(date),
+      time: item.time,
+      standardDrinks,
+      recordSource: 'source' in item ? item.source : 'database',
+      createdAt: date.toISOString(),
+    }
+  })
 }
 
 function createId(prefix: string) {
@@ -208,6 +269,7 @@ export default function App() {
       abv: drink.abv,
       containerSizeMl: drink.sizeMl,
       containerType: drink.containerType,
+      recordSource: selectedDrinkSource === 'database' ? 'database' : 'manual',
       createdAt: new Date().toISOString(),
     }
 
@@ -228,6 +290,19 @@ export default function App() {
 
   const deleteMyDrink = (drinkId: string) => {
     setMyDrinks((prev) => prev.filter((drink) => drink.id !== drinkId))
+  }
+
+
+  const updateConsumptionRecord = (updated: ConsumptionRecord) => {
+    setConsumptionRecords((prev) => prev.map((record) => record.id === updated.id ? updated : record))
+  }
+
+  const deleteConsumptionRecord = (recordId: string) => {
+    setConsumptionRecords((prev) => prev.filter((record) => record.id !== recordId))
+  }
+
+  const loadPrototypeHistory = () => {
+    setConsumptionRecords(buildPrototypeHistory())
   }
 
   const lastRecorded = lastRecordedId
@@ -262,6 +337,7 @@ export default function App() {
         {activeNav === 'Record' && recordView === 'main' && (
           <RecordPage
             key={recordPageKey}
+            onScanBarcode={() => setRecordView('barcode')}
             onRecordManually={() => setRecordView('manual')}
             onSelectDrink={(drink, source) => {
               setSelectedDrink(drink)
@@ -277,6 +353,18 @@ export default function App() {
             initialCategory={recordBrowseState.category}
             initialQuery={recordBrowseState.query}
             onBrowseStateChange={setRecordBrowseState}
+          />
+        )}
+
+        {activeNav === 'Record' && recordView === 'barcode' && (
+          <BarcodeScannerPage
+            onBack={returnToRecordMain}
+            onUseDrink={(drink) => {
+              setSelectedDrink(drink)
+              setSelectedDrinkSource('database')
+              setRecordView('consume')
+            }}
+            onRecordManually={() => setRecordView('manual')}
           />
         )}
 
@@ -320,7 +408,14 @@ export default function App() {
           />
         )}
 
-        {activeNav === 'Trends' && <PlaceholderPage label="Trends" />}
+        {activeNav === 'Trends' && (
+          <HistoryTrendsPage
+            records={consumptionRecords}
+            onUpdateRecord={updateConsumptionRecord}
+            onDeleteRecord={deleteConsumptionRecord}
+            onLoadPrototypeData={loadPrototypeHistory}
+          />
+        )}
         {activeNav === 'Awards' && <PlaceholderPage label="Awards" />}
       </main>
 
