@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { DrinkCategory, DrinkDefinition, NewDrinkRecordPayload } from '@/types/alcohol'
 import { calculateStandardDrinks, roundStandardDrinks } from '@/utils/alcohol'
 
@@ -55,7 +55,7 @@ function PlusIcon() {
   )
 }
 
-function TopNav({ onBack, label }: { onBack: () => void; label: string }) {
+export function TopNav({ onBack, label }: { onBack: () => void; label: string }) {
   return (
     <button
       type="button"
@@ -69,7 +69,7 @@ function TopNav({ onBack, label }: { onBack: () => void; label: string }) {
 }
 
 function FieldLabel({ children }: { children: ReactNode }) {
-  return <p className="text-[15px] font-semibold text-[#1C1C1A] mb-2">{children}</p>
+  return <p className="text-[17px] font-semibold text-[#1C1C1A] mb-2">{children}</p>
 }
 
 // ── Drink details ──────────────────────────────────────────
@@ -85,19 +85,21 @@ export type DrinkDetailsData = {
 const drinkTypes = ['Beer', 'Wine', 'Spirits', 'Cider', 'RTD', 'Other']
 const servingTypes = ['Bottle', 'Can', 'Glass', 'Shot', 'Schooner', 'Pint', 'Other']
 
-// Manual recording is consumption-first, so defaults represent a typical
-// recordable serving rather than always defaulting to a full retail bottle.
-const drinkTypeDefaults: Record<string, { abv: string; size: string; container: string }> = {
+// Drink-type references are examples only. They update placeholder text
+// without writing values into the form, so OCR and user-entered data are never overwritten.
+const drinkTypeExamples: Record<string, { abv: string; size: string; container: string }> = {
   Beer: { abv: '4.5', size: '375', container: 'Can' },
   Wine: { abv: '13.5', size: '150', container: 'Glass' },
   Spirits: { abv: '40', size: '30', container: 'Shot' },
   Cider: { abv: '4.5', size: '375', container: 'Can' },
   RTD: { abv: '5', size: '375', container: 'Can' },
-  Other: { abv: '', size: '', container: 'Other' },
+  Other: { abv: '5', size: '375', container: 'Bottle' },
 }
 
-function defaultsForDrinkType(type: string) {
-  return drinkTypeDefaults[type] ?? drinkTypeDefaults.Other
+const genericDrinkExamples = { abv: '13.5', size: '150', container: 'Glass' }
+
+function examplesForDrinkType(type: string) {
+  return drinkTypeExamples[type] ?? genericDrinkExamples
 }
 
 function normalizeDrinkDetails(data: DrinkDetailsData): Omit<DrinkDefinition, 'id'> {
@@ -125,10 +127,12 @@ function validateDrinkDetails(data: DrinkDetailsData): string | null {
   const size = Number(data.size)
 
   if (!data.name.trim()) return 'Drink name is required.'
+  if (!data.type.trim()) return 'Drink type is required.'
   if (!data.abv.trim()) return 'Alcohol strength is required.'
   if (!Number.isFinite(abv) || abv <= 0 || abv > 100) {
     return 'Alcohol strength must be greater than 0 and no more than 100%.'
   }
+  if (!data.container.trim()) return 'Serving / container type is required.'
   if (!data.size.trim()) return 'Serving / container size is required.'
   if (!Number.isFinite(size) || size <= 0) {
     return 'Serving / container size must be greater than 0 mL.'
@@ -136,35 +140,22 @@ function validateDrinkDetails(data: DrinkDetailsData): string | null {
   return null
 }
 
-function DrinkDetailsFields({
+export function DrinkDetailsFields({
   data,
   onChange,
-  allowDefaults,
+  useContextualExamples,
 }: {
   data: DrinkDetailsData
   onChange: (nextData: DrinkDetailsData) => void
-  allowDefaults: boolean
+  useContextualExamples: boolean
 }) {
-  const initialDefaults = defaultsForDrinkType(data.type)
-  const abvEdited = useRef(!allowDefaults || data.abv !== initialDefaults.abv)
-  const sizeEdited = useRef(!allowDefaults || data.size !== initialDefaults.size)
-  const servingTypeEdited = useRef(!allowDefaults || data.container !== initialDefaults.container)
-
   const update = (patch: Partial<DrinkDetailsData>) => onChange({ ...data, ...patch })
+  const contextualExamples = useContextualExamples
+    ? examplesForDrinkType(data.type)
+    : genericDrinkExamples
 
   const handleTypeChange = (nextType: string) => {
-    if (!allowDefaults) {
-      update({ type: nextType })
-      return
-    }
-
-    const defaults = defaultsForDrinkType(nextType)
-    update({
-      type: nextType,
-      abv: abvEdited.current ? data.abv : defaults.abv,
-      size: sizeEdited.current ? data.size : defaults.size,
-      container: servingTypeEdited.current ? data.container : defaults.container,
-    })
+    update({ type: nextType })
   }
 
   return (
@@ -172,7 +163,7 @@ function DrinkDetailsFields({
       <div className="mb-4">
         <FieldLabel>Drink name</FieldLabel>
         <input
-          className="w-full h-[52px] bg-[#F5F6F8] rounded-xl px-4 text-[17px] text-[#1C1C1A] placeholder:text-[#8A8682] outline-none focus:ring-2 focus:ring-[#1A5FCC]/30"
+          className="w-full h-[52px] bg-[#F5F6F8] rounded-xl px-4 text-[18px] text-[#1C1C1A] placeholder:text-[#8A8682] outline-none focus:ring-2 focus:ring-[#1A5FCC]/30"
           placeholder="e.g. Jacob's Creek Shiraz"
           value={data.name}
           onChange={(event) => update({ name: event.target.value })}
@@ -183,12 +174,19 @@ function DrinkDetailsFields({
         <FieldLabel>Drink type</FieldLabel>
         <div className="relative">
           <select
-            className="w-full h-[52px] bg-[#F5F6F8] rounded-xl px-4 text-[17px] text-[#1C1C1A] outline-none appearance-none focus:ring-2 focus:ring-[#1A5FCC]/30"
+            className={`contextual-select w-full h-[52px] bg-[#F5F6F8] rounded-xl px-4 pr-12 text-[18px] outline-none appearance-none focus:ring-2 focus:ring-[#1A5FCC]/30 ${data.type ? 'text-[#1C1C1A]' : 'text-transparent'}`}
             value={data.type}
             onChange={(event) => handleTypeChange(event.target.value)}
+            aria-label="Drink type"
           >
-            {drinkTypes.map((type) => <option key={type}>{type}</option>)}
+            <option value="" disabled hidden aria-hidden="true"></option>
+            {drinkTypes.map((type) => <option key={type} value={type}>{type}</option>)}
           </select>
+          {!data.type && (
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[18px] text-[#8A8682] pointer-events-none">
+              e.g. Wine
+            </span>
+          )}
           <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
             <IcoChevronDown />
           </div>
@@ -199,21 +197,18 @@ function DrinkDetailsFields({
         <FieldLabel>Alcohol strength</FieldLabel>
         <div className="flex items-center gap-3">
           <input
-            className="flex-1 h-[52px] bg-[#F5F6F8] rounded-xl px-4 text-[17px] text-[#1C1C1A] outline-none focus:ring-2 focus:ring-[#1A5FCC]/30"
+            className="flex-1 h-[52px] bg-[#F5F6F8] rounded-xl px-4 text-[18px] text-[#1C1C1A] placeholder:text-[#8A8682] outline-none focus:ring-2 focus:ring-[#1A5FCC]/30"
             type="number"
             inputMode="decimal"
             min="0"
             max="100"
             step="0.1"
-            placeholder="0.0"
+            placeholder={`e.g. ${contextualExamples.abv}`}
             value={data.abv}
-            onChange={(event) => {
-              abvEdited.current = true
-              update({ abv: event.target.value })
-            }}
+            onChange={(event) => update({ abv: event.target.value })}
           />
           <div className="h-[52px] px-4 bg-[#EEEDF3] rounded-xl flex items-center">
-            <span className="text-[17px] font-medium text-[#4A5260]">% ABV</span>
+            <span className="text-[18px] font-medium text-[#4A5260]">% ABV</span>
           </div>
         </div>
       </div>
@@ -222,15 +217,19 @@ function DrinkDetailsFields({
         <FieldLabel>Serving / container type</FieldLabel>
         <div className="relative">
           <select
-            className="w-full h-[52px] bg-[#F5F6F8] rounded-xl px-4 text-[17px] text-[#1C1C1A] outline-none appearance-none focus:ring-2 focus:ring-[#1A5FCC]/30"
+            className={`contextual-select w-full h-[52px] bg-[#F5F6F8] rounded-xl px-4 pr-12 text-[18px] outline-none appearance-none focus:ring-2 focus:ring-[#1A5FCC]/30 ${data.container ? 'text-[#1C1C1A]' : 'text-transparent'}`}
             value={data.container}
-            onChange={(event) => {
-              servingTypeEdited.current = true
-              update({ container: event.target.value })
-            }}
+            onChange={(event) => update({ container: event.target.value })}
+            aria-label="Serving or container type"
           >
-            {servingTypes.map((type) => <option key={type}>{type}</option>)}
+            <option value="" disabled hidden aria-hidden="true"></option>
+            {servingTypes.map((type) => <option key={type} value={type}>{type}</option>)}
           </select>
+          {!data.container && (
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[18px] text-[#8A8682] pointer-events-none">
+              {`e.g. ${contextualExamples.container}`}
+            </span>
+          )}
           <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
             <IcoChevronDown />
           </div>
@@ -241,25 +240,22 @@ function DrinkDetailsFields({
         <FieldLabel>Serving / container size</FieldLabel>
         <div className="flex items-center gap-3">
           <input
-            className="flex-1 h-[52px] bg-[#F5F6F8] rounded-xl px-4 text-[17px] text-[#1C1C1A] outline-none focus:ring-2 focus:ring-[#1A5FCC]/30"
+            className="flex-1 h-[52px] bg-[#F5F6F8] rounded-xl px-4 text-[18px] text-[#1C1C1A] placeholder:text-[#8A8682] outline-none focus:ring-2 focus:ring-[#1A5FCC]/30"
             type="number"
             inputMode="decimal"
             min="0"
             step="1"
-            placeholder="150"
+            placeholder={`e.g. ${contextualExamples.size}`}
             value={data.size}
-            onChange={(event) => {
-              sizeEdited.current = true
-              update({ size: event.target.value })
-            }}
+            onChange={(event) => update({ size: event.target.value })}
           />
           <div className="h-[52px] px-4 bg-[#EEEDF3] rounded-xl flex items-center">
-            <span className="text-[17px] font-medium text-[#4A5260]">mL</span>
+            <span className="text-[18px] font-medium text-[#4A5260]">mL</span>
           </div>
         </div>
       </div>
 
-      <p className="text-[14px] text-[#647280] leading-relaxed mb-7">
+      <p className="text-[16px] text-[#647280] leading-relaxed mb-7">
         This defines one serving for quick recording below, for example 1 glass = 150 mL or 1 can = 375 mL.
       </p>
     </>
@@ -318,7 +314,7 @@ function AmountStepper({
           className="font-display text-[46px] text-[#1C1C1A] leading-none text-center w-full bg-transparent outline-none"
           aria-label={`Amount in ${unit}`}
         />
-        <p className="text-[14px] text-[#56524F] mt-1 text-center">{unit}</p>
+        <p className="text-[16px] text-[#56524F] mt-1 text-center">{unit}</p>
       </div>
 
       <button
@@ -344,6 +340,19 @@ function DrinkSummary({ drinkData }: { drinkData: DrinkDetailsData }) {
       </p>
     </div>
   )
+}
+
+function openNativePicker(input: HTMLInputElement) {
+  // Keep the real native input clickable for iOS/Android, while explicitly
+  // opening the picker on desktop browsers that support showPicker().
+  if (typeof input.showPicker === 'function') {
+    try {
+      input.showPicker()
+    } catch {
+      // Some browsers already open their native picker from the same click.
+      // In that case, fall back to the browser's default input behaviour.
+    }
+  }
 }
 
 function ConsumptionSection({
@@ -374,8 +383,6 @@ function ConsumptionSection({
     const now = new Date()
     return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
   })
-  const dateRef = useRef<HTMLInputElement>(null)
-  const timeRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!mlEdited.current) setMlValue(drinkData.size || '0')
@@ -421,13 +428,6 @@ function ConsumptionSection({
     return `${h12}:${String(minutes).padStart(2, '0')} ${ampm}`
   }
 
-  const openPicker = (ref: RefObject<HTMLInputElement | null>) => {
-    const element = ref.current
-    if (!element) return
-    if (typeof element.showPicker === 'function') element.showPicker()
-    else element.click()
-  }
-
   const handleRecord = () => {
     const detailsError = validateDrinkDetails(drinkData)
     if (detailsError) {
@@ -464,7 +464,7 @@ function ConsumptionSection({
 
   return (
     <>
-      <p className="text-[13px] font-bold uppercase tracking-widest text-[#647280] mb-4">
+      <p className="text-[16px] font-bold uppercase tracking-widest text-[#647280] mb-4">
         How much did you drink?
       </p>
 
@@ -472,7 +472,7 @@ function ConsumptionSection({
         <div className="bg-[#F5F6F8] rounded-xl p-1 flex">
           <button
             type="button"
-            className="flex-1 min-h-11 rounded-lg text-[15px] font-semibold transition-all duration-200"
+            className="flex-1 min-h-11 rounded-lg text-[17px] font-semibold transition-all duration-200"
             style={{
               backgroundColor: mode === 'serving' ? 'white' : 'transparent',
               color: mode === 'serving' ? '#1A5FCC' : '#4A5260',
@@ -484,7 +484,7 @@ function ConsumptionSection({
           </button>
           <button
             type="button"
-            className="flex-1 min-h-11 rounded-lg text-[15px] font-semibold transition-all duration-200"
+            className="flex-1 min-h-11 rounded-lg text-[17px] font-semibold transition-all duration-200"
             style={{
               backgroundColor: mode === 'ml' ? 'white' : 'transparent',
               color: mode === 'ml' ? '#1A5FCC' : '#4A5260',
@@ -500,7 +500,7 @@ function ConsumptionSection({
       <div className="bg-[#F5F6F8] rounded-2xl p-5 mb-6">
         {mode === 'serving' ? (
           <>
-            <p className="text-[14px] text-[#647280] text-center mb-4">
+            <p className="text-[16px] text-[#647280] text-center mb-4">
               1 {servingUnit.toLowerCase()} = {drinkData.size || '0'} mL
             </p>
             <AmountStepper
@@ -528,58 +528,52 @@ function ConsumptionSection({
 
       <div className="rounded-2xl bg-[#EEF4FF] p-4 mb-6 flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-[15px] font-semibold text-[#1C1C1A]">Estimated standard drinks</p>
-          <p className="text-[13px] text-[#56524F] mt-1 leading-snug">
+          <p className="text-[17px] font-semibold text-[#1C1C1A]">Estimated standard drinks</p>
+          <p className="text-[16px] text-[#56524F] mt-1 leading-snug">
             Based on {Math.round(consumedMl * 10) / 10} mL consumed and {drinkData.abv || '0'}% ABV.
           </p>
         </div>
         <div className="flex-shrink-0 text-right">
           <p className="font-display text-[32px] leading-none text-[#1A5FCC]">{standardDrinks.toFixed(1)}</p>
-          <p className="text-[12px] text-[#647280] mt-1">standard drinks</p>
+          <p className="text-[15px] text-[#647280] mt-1">standard drinks</p>
         </div>
       </div>
 
-      <p className="text-[13px] font-bold uppercase tracking-widest text-[#647280] mb-3">
+      <p className="text-[16px] font-bold uppercase tracking-widest text-[#647280] mb-3">
         When did you drink?
       </p>
       <div className="rounded-2xl overflow-hidden border border-[#E2DDD8] divide-y divide-[#E2DDD8] mb-6">
-        <div className="relative">
-          <button
-            type="button"
-            className="w-full flex items-center gap-3.5 px-4 py-4 bg-white active:bg-[#F7F8FA] transition-colors"
-            onClick={() => openPicker(dateRef)}
-          >
+        <label className="relative block bg-white active:bg-[#F7F8FA] transition-colors cursor-pointer">
+          <div className="w-full flex items-center gap-3.5 px-4 py-4 pointer-events-none">
             <IcoCalendar />
             <span className="text-[17px] text-[#1C1C1A] flex-1 text-left">Date</span>
             <span className="text-[17px] font-medium text-[#1A5FCC]">{formatDate(dateVal)}</span>
-          </button>
+          </div>
           <input
-            ref={dateRef}
             type="date"
             value={dateVal}
             max={todayStr}
+            onClick={(event) => openNativePicker(event.currentTarget)}
             onChange={(event) => event.target.value && setDateVal(event.target.value)}
-            className="sr-only"
+            className="absolute inset-0 z-10 h-full w-full opacity-0 cursor-pointer"
+            aria-label="Date"
           />
-        </div>
-        <div className="relative">
-          <button
-            type="button"
-            className="w-full flex items-center gap-3.5 px-4 py-4 bg-white active:bg-[#F7F8FA] transition-colors"
-            onClick={() => openPicker(timeRef)}
-          >
+        </label>
+        <label className="relative block bg-white active:bg-[#F7F8FA] transition-colors cursor-pointer">
+          <div className="w-full flex items-center gap-3.5 px-4 py-4 pointer-events-none">
             <IcoClock />
             <span className="text-[17px] text-[#1C1C1A] flex-1 text-left">Time</span>
             <span className="text-[17px] font-medium text-[#1A5FCC]">{formatTime(timeVal)}</span>
-          </button>
+          </div>
           <input
-            ref={timeRef}
             type="time"
             value={timeVal}
+            onClick={(event) => openNativePicker(event.currentTarget)}
             onChange={(event) => event.target.value && setTimeVal(event.target.value)}
-            className="sr-only"
+            className="absolute inset-0 z-10 h-full w-full opacity-0 cursor-pointer"
+            aria-label="Time"
           />
-        </div>
+        </label>
       </div>
 
       {allowSaveToMyDrinks && (
@@ -591,15 +585,15 @@ function ConsumptionSection({
             onChange={(event) => setSaveToMyDrinks(event.target.checked)}
           />
           <span>
-            <span className="block text-[16px] font-semibold text-[#1C1C1A]">Save this drink to My Drinks</span>
-            <span className="block text-[14px] text-[#647280] leading-relaxed mt-0.5">Save these drink details so you can record it faster next time.</span>
+            <span className="block text-[17px] font-semibold text-[#1C1C1A]">Save this drink to My Drinks</span>
+            <span className="block text-[16px] text-[#647280] leading-relaxed mt-0.5">Save these drink details so you can record it faster next time.</span>
           </span>
         </label>
       )}
 
       {alreadySavedToMyDrinks && (
         <div className="rounded-2xl bg-[#F5F6F8] px-4 py-3 mb-6">
-          <p className="text-[14px] font-medium text-[#56524F]">This drink is already saved in My Drinks.</p>
+          <p className="text-[16px] font-medium text-[#56524F]">This drink is already saved in My Drinks.</p>
         </div>
       )}
 
@@ -665,13 +659,13 @@ export function ExistingDrinkConsumptionPage({
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
       <TopNav onBack={onBack} label="Back to Record" />
-      <div className="responsive-form-inner flex-shrink-0 px-5 pb-4">
-        <h1 className="font-display text-[30px] text-[#1C1C1A] leading-tight">Record Consumption</h1>
-        <p className="text-[15px] text-[#56524F] mt-1">Tell us how much you drank.</p>
-      </div>
 
       <div className="flex-1 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
         <div className="responsive-form-inner px-5">
+          <div className="pb-4">
+            <h1 className="font-display text-[30px] text-[#1C1C1A] leading-tight">Record Consumption</h1>
+            <p className="text-[15px] text-[#56524F] mt-1">Tell us how much you drank.</p>
+          </div>
           <DrinkSummary drinkData={drinkData} />
           <ConsumptionSection
             drinkData={drinkData}
@@ -718,15 +712,15 @@ export function EditDrinkPage({
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
       <TopNav onBack={onBack} label="Back to My Drinks" />
-      <div className="responsive-form-inner flex-shrink-0 px-5 pb-4">
-        <h1 className="font-display text-[30px] text-[#1C1C1A] leading-tight">Edit Drink</h1>
-        <p className="text-[15px] text-[#56524F] mt-1">Update the reusable drink details saved in My Drinks.</p>
-      </div>
 
       <div className="flex-1 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
         <div className="responsive-form-inner px-5">
-          <p className="text-[13px] font-bold uppercase tracking-widest text-[#647280] mb-4">Drink Details</p>
-          <DrinkDetailsFields data={data} onChange={setData} allowDefaults={false} />
+          <div className="pb-4">
+            <h1 className="font-display text-[30px] text-[#1C1C1A] leading-tight">Edit Drink</h1>
+            <p className="text-[15px] text-[#56524F] mt-1">Update the reusable drink details saved in My Drinks.</p>
+          </div>
+          <p className="text-[15px] font-bold uppercase tracking-widest text-[#647280] mb-4">Drink Details</p>
+          <DrinkDetailsFields data={data} onChange={setData} useContextualExamples={false} />
           <button
             type="button"
             className="w-full h-[56px] rounded-2xl bg-[#1A5FCC] text-[17px] font-semibold text-white active:opacity-80 transition-opacity mb-5"
@@ -753,13 +747,47 @@ export default function AddDrinkPage({
 }) {
   const [drinkData, setDrinkData] = useState<DrinkDetailsData>({
     name: '',
-    type: 'Wine',
-    abv: '13.5',
-    size: '150',
-    container: 'Glass',
+    type: '',
+    abv: '',
+    size: '',
+    container: '',
   })
   const [toast, setToast] = useState<string | null>(null)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const labelImageInputRef = useRef<HTMLInputElement>(null)
+  const labelScanTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [labelScanStatus, setLabelScanStatus] = useState<'idle' | 'reading' | 'success'>('idle')
+
+  useEffect(() => () => {
+    if (labelScanTimer.current) clearTimeout(labelScanTimer.current)
+  }, [])
+
+  const openLabelImagePicker = () => {
+    if (labelScanStatus === 'reading') return
+    labelImageInputRef.current?.click()
+  }
+
+  const handleLabelImageSelected = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setLabelScanStatus('reading')
+    if (labelScanTimer.current) clearTimeout(labelScanTimer.current)
+
+    // Prototype behaviour: simulate OCR after the user provides an image.
+    // Production implementation will replace this timer with the OCR service.
+    labelScanTimer.current = setTimeout(() => {
+      setDrinkData({
+        name: "Jacob's Creek Shiraz",
+        type: 'Wine',
+        abv: '13.5',
+        size: '750',
+        container: 'Bottle',
+      })
+      setLabelScanStatus('success')
+      event.target.value = ''
+    }, 1100)
+  }
 
   const showValidationError = (message: string) => {
     setToast(message)
@@ -771,35 +799,65 @@ export default function AddDrinkPage({
     <div className="flex-1 flex flex-col overflow-hidden relative">
       <TopNav onBack={onBack} label="Back to Record" />
 
-      <div className="responsive-form-inner flex-shrink-0 px-5 pb-4">
-        <h1 className="font-display text-[30px] text-[#1C1C1A] leading-tight">Record a Drink</h1>
-        <p className="text-[15px] text-[#56524F] mt-1">Enter the drink details and how much you drank.</p>
-      </div>
-
       <div className="flex-1 overflow-y-auto hide-scrollbar app-scroll-nav-clearance">
         <div className="responsive-form-inner px-5">
+          <div className="pb-4">
+            <h1 className="font-display text-[34px] text-[#1C1C1A] leading-tight">Record a Drink</h1>
+            <p className="text-[17px] text-[#56524F] mt-1">Enter the drink details and how much you drank.</p>
+          </div>
+
           <div className="bg-[#F5F6F8] rounded-2xl p-5 mb-6">
             <div className="flex items-center gap-2 mb-2">
               <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                 <path d="M7 2H4a2 2 0 0 0-2 2v3M13 2h3a2 2 0 0 1 2 2v3M7 18H4a2 2 0 0 1-2-2v-3M13 18h3a2 2 0 0 0 2-2v-3" stroke="#647280" strokeWidth="1.6" strokeLinecap="round" />
                 <circle cx="10" cy="10" r="2.5" stroke="#647280" strokeWidth="1.6" />
               </svg>
-              <p className="text-[17px] font-semibold text-[#1C1C1A]">Scan drink label</p>
+              <p className="text-[19px] font-semibold text-[#1C1C1A]">Scan drink label</p>
             </div>
-            <p className="text-[15px] text-[#56524F] leading-relaxed mb-4">
+            <p className="text-[17px] text-[#56524F] leading-relaxed mb-4">
               Take or upload a photo of the label to help fill in the drink details automatically.
             </p>
+
+            <input
+              ref={labelImageInputRef}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={handleLabelImageSelected}
+              aria-label="Choose a drink label image"
+            />
+
             <button
               type="button"
-              className="w-full h-[44px] rounded-xl text-[15px] font-semibold border border-[#D0D9E8] text-[#8A9AB8] bg-white cursor-not-allowed"
-              disabled
+              className="w-full h-[52px] rounded-xl text-[17px] font-semibold border border-[#C9D7EB] text-[#1A5FCC] bg-white active:bg-[#F8FBFF] transition-colors disabled:text-[#6F7F95] disabled:bg-[#EEF2F7] disabled:cursor-wait flex items-center justify-center gap-2"
+              onClick={openLabelImagePicker}
+              disabled={labelScanStatus === 'reading'}
             >
-              Scan Label — Coming Soon
+              {labelScanStatus === 'reading' ? (
+                <>
+                  <span className="inline-block w-4 h-4 rounded-full border-2 border-[#9BB5DB] border-t-[#1A5FCC] animate-spin" aria-hidden="true" />
+                  <span>Reading label…</span>
+                </>
+              ) : (
+                <span>{labelScanStatus === 'success' ? 'Scan another label' : 'Scan Label'}</span>
+              )}
             </button>
+
+            {labelScanStatus === 'success' && (
+              <div className="mt-3 min-h-[64px] rounded-xl bg-[#EAF7EF] px-4 py-4 flex items-center gap-3" role="status">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="flex-shrink-0">
+                  <circle cx="10" cy="10" r="9" fill="#2D8A57" />
+                  <path d="M6 10.2L8.7 13L14.2 7.4" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <p className="text-[16px] font-medium text-[#245D3D] leading-relaxed">
+                  Label details added. Please check the details below before continuing.
+                </p>
+              </div>
+            )}
           </div>
 
-          <p className="text-[13px] font-bold uppercase tracking-widest text-[#647280] mb-4">Drink Details</p>
-          <DrinkDetailsFields data={drinkData} onChange={setDrinkData} allowDefaults />
+          <p className="text-[16px] font-bold uppercase tracking-widest text-[#647280] mb-4">Drink Details</p>
+          <DrinkDetailsFields data={drinkData} onChange={setDrinkData} useContextualExamples />
 
           <div className="h-px bg-[#E8E4DF] mb-7" />
 

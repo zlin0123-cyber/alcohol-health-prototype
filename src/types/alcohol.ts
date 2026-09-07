@@ -29,6 +29,8 @@ export type ConsumptionRecord = {
   date: string
   time: string
   standardDrinks: number
+  /** Source of the drink profile used for this record. Older records may omit this field. */
+  recordSource?: 'database' | 'manual'
   createdAt: string
 }
 
