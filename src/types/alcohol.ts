@@ -9,6 +9,8 @@ export type DrinkDefinition = {
   containerType: string
 }
 
+// 'container' is retained for compatibility with records created by older prototype versions.
+// New Record flows use only 'serving' or 'ml'.
 export type ConsumptionMode = 'ml' | 'serving' | 'container'
 
 export type ConsumptionRecord = {
@@ -32,9 +34,9 @@ export type ConsumptionRecord = {
 
 export type NewDrinkRecordPayload = {
   drink: Omit<DrinkDefinition, 'id'>
-  /** Existing library/My Drinks ID. Omit when creating a new custom drink. */
+  /** Existing database/My Drinks ID. Omit for a manually entered drink that is not yet saved. */
   drinkId?: string
-  /** True only when this flow creates a new custom drink that should be kept in My Drinks. */
+  /** When true, save/reuse this drink profile in My Drinks while recording the consumption. */
   saveToMyDrinks?: boolean
   consumption: Omit<ConsumptionRecord, 'id' | 'drinkId' | 'drinkName' | 'category' | 'abv' | 'containerSizeMl' | 'containerType' | 'createdAt'>
 }

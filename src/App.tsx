@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import HomePage from '@/pages/HomePage'
 import LearnPage from '@/pages/LearnPage'
-import RecordPage, { type RecordBrowseState } from '@/pages/RecordPage'
+import RecordPage, { type RecordBrowseState, type RecordDrinkSource } from '@/pages/RecordPage'
 import AddDrinkPage, { EditDrinkPage, ExistingDrinkConsumptionPage } from '@/pages/AddDrinkPage'
 import RecordResultPage from '@/pages/RecordResultPage'
 import type { ConsumptionRecord, DrinkDefinition, NewDrinkRecordPayload } from '@/types/alcohol'
@@ -87,7 +87,7 @@ function PlaceholderPage({ label }: { label: string }) {
 const MY_DRINKS_STORAGE_KEY = 'alcohol-health.my-drinks.v1'
 const CONSUMPTION_STORAGE_KEY = 'alcohol-health.consumption-records.v1'
 
-type RecordView = 'main' | 'add' | 'consume' | 'edit' | 'result'
+type RecordView = 'main' | 'manual' | 'consume' | 'edit' | 'result'
 
 function loadStoredArray<T>(key: string): T[] {
   if (typeof window === 'undefined') return []
@@ -108,6 +108,15 @@ function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 }
 
+
+function isSameDrinkProfile(left: Omit<DrinkDefinition, 'id'> | DrinkDefinition, right: Omit<DrinkDefinition, 'id'> | DrinkDefinition) {
+  return left.name.trim().toLowerCase() === right.name.trim().toLowerCase()
+    && left.category === right.category
+    && left.abv === right.abv
+    && left.sizeMl === right.sizeMl
+    && left.containerType === right.containerType
+}
+
 export default function App() {
   const [activeNav, setActiveNav] = useState<NavTab>('Home')
   const [learnTarget, setLearnTarget] = useState<string | null>(null)
@@ -117,6 +126,7 @@ export default function App() {
   const [recordPageKey, setRecordPageKey] = useState(0)
   const [recordBrowseState, setRecordBrowseState] = useState<RecordBrowseState>({ category: 'All', query: '' })
   const [selectedDrink, setSelectedDrink] = useState<DrinkDefinition | null>(null)
+  const [selectedDrinkSource, setSelectedDrinkSource] = useState<RecordDrinkSource | null>(null)
   const [editingDrink, setEditingDrink] = useState<DrinkDefinition | null>(null)
   const [lastRecordedId, setLastRecordedId] = useState<string | null>(null)
 
@@ -134,6 +144,7 @@ export default function App() {
   const resetRecordToMain = (browseState: RecordBrowseState = { category: 'All', query: '' }) => {
     setRecordView('main')
     setSelectedDrink(null)
+    setSelectedDrinkSource(null)
     setEditingDrink(null)
     setLastRecordedId(null)
     setRecordBrowseState(browseState)
@@ -143,6 +154,7 @@ export default function App() {
   const returnToRecordMain = () => {
     setRecordView('main')
     setSelectedDrink(null)
+    setSelectedDrinkSource(null)
     setEditingDrink(null)
     setLastRecordedId(null)
     setRecordPageKey((key) => key + 1)
@@ -167,39 +179,12 @@ export default function App() {
     setActiveNav('Learn')
   }
 
-  const saveNewDrink = (draft: Omit<DrinkDefinition, 'id'>, existingId?: string) => {
-    if (existingId) {
-      const updated: DrinkDefinition = { ...draft, id: existingId }
-      setMyDrinks((prev) => prev.map((drink) => drink.id === existingId ? updated : drink))
-      return updated
-    }
-
-    const duplicate = myDrinks.find((drink) =>
-      drink.name.trim().toLowerCase() === draft.name.trim().toLowerCase()
-      && drink.category === draft.category
-      && drink.abv === draft.abv
-      && drink.sizeMl === draft.sizeMl
-      && drink.containerType === draft.containerType
-    )
-    if (duplicate) return duplicate
-
-    const created: DrinkDefinition = { ...draft, id: createId('drink') }
-    setMyDrinks((prev) => [...prev, created])
-    return created
-  }
-
   const recordConsumption = (payload: NewDrinkRecordPayload) => {
     let drinkId = payload.drinkId
     let drink = payload.drink
 
     if (payload.saveToMyDrinks) {
-      const existingDrink = myDrinks.find((candidate) =>
-        candidate.name.trim().toLowerCase() === payload.drink.name.trim().toLowerCase()
-        && candidate.category === payload.drink.category
-        && candidate.abv === payload.drink.abv
-        && candidate.sizeMl === payload.drink.sizeMl
-        && candidate.containerType === payload.drink.containerType
-      )
+      const existingDrink = myDrinks.find((candidate) => isSameDrinkProfile(candidate, payload.drink))
 
       if (existingDrink) {
         drinkId = existingDrink.id
@@ -229,6 +214,7 @@ export default function App() {
     setConsumptionRecords((prev) => [consumption, ...prev])
     setLastRecordedId(consumption.id)
     setSelectedDrink(null)
+    setSelectedDrinkSource(null)
     setEditingDrink(null)
     setRecordView('result')
     setActiveNav('Record')
@@ -276,9 +262,10 @@ export default function App() {
         {activeNav === 'Record' && recordView === 'main' && (
           <RecordPage
             key={recordPageKey}
-            onAddManually={() => setRecordView('add')}
-            onSelectDrink={(drink) => {
+            onRecordManually={() => setRecordView('manual')}
+            onSelectDrink={(drink, source) => {
               setSelectedDrink(drink)
+              setSelectedDrinkSource(source)
               setRecordView('consume')
             }}
             onEditDrink={(drink) => {
@@ -293,10 +280,9 @@ export default function App() {
           />
         )}
 
-        {activeNav === 'Record' && recordView === 'add' && (
+        {activeNav === 'Record' && recordView === 'manual' && (
           <AddDrinkPage
             onBack={returnToRecordMain}
-            onSaveDrink={saveNewDrink}
             onRecord={recordConsumption}
           />
         )}
@@ -306,6 +292,14 @@ export default function App() {
             drink={selectedDrink}
             onBack={returnToRecordMain}
             onRecord={recordConsumption}
+            allowSaveToMyDrinks={
+              selectedDrinkSource === 'database'
+              && !myDrinks.some((savedDrink) => isSameDrinkProfile(savedDrink, selectedDrink))
+            }
+            alreadySavedToMyDrinks={
+              selectedDrinkSource === 'my-drinks'
+              || myDrinks.some((savedDrink) => isSameDrinkProfile(savedDrink, selectedDrink))
+            }
           />
         )}
 

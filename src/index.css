@@ -204,11 +204,14 @@ textarea {
   }
 
   .learn-featured-wrap,
-  .learn-topics-wrap,
-  .learn-trust-wrap {
-    margin-inline: 0;
-    padding-inline: 0;
-  }
+.learn-topics-wrap {
+  margin-inline: 0;
+  padding-inline: 0;
+}
+
+.learn-trust-wrap {
+  margin-inline: 0;
+}
 
   .record-page-top,
   .record-controls,
