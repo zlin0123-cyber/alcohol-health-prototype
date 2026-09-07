@@ -30,6 +30,7 @@ const drinks: DrinkDefinition[] = [
 const sideCategories = ['All', 'Beer', 'Wine', 'Spirits', 'Cider', 'RTD', 'Other'] as const
 export type RecordCategory = typeof sideCategories[number] | 'My Drinks'
 export type RecordBrowseState = { category: RecordCategory; query: string }
+export type RecordDrinkSource = 'database' | 'my-drinks'
 
 // ── Category thumbnail icons ───────────────────────────────
 
@@ -89,13 +90,13 @@ function DrinkThumb({ category }: { category: DrinkCategory }) {
 
 function DrinkItem({
   drink,
-  isCustom,
+  isSaved,
   onSelect,
   onEdit,
   onDelete,
 }: {
   drink: DrinkDefinition
-  isCustom: boolean
+  isSaved: boolean
   onSelect: () => void
   onEdit?: () => void
   onDelete?: () => void
@@ -110,12 +111,12 @@ function DrinkItem({
         <div className="flex-1 min-w-0">
           <p className="text-[19px] font-medium text-[#1C1C1A] leading-snug truncate">{drink.name}</p>
           <p className="text-[16px] text-[#56524F] mt-1 leading-tight">
-            {drink.category} · {drink.abv}% ABV · {drink.sizeMl} mL
+            {drink.category} · {drink.abv}% ABV · {drink.sizeMl} mL {drink.containerType.toLowerCase()}
           </p>
         </div>
         <IcoChevron />
       </button>
-      {isCustom && (
+      {isSaved && (
         <div className="flex justify-end gap-2 px-3 pb-3 -mt-1">
           <button
             className="min-h-11 px-4 rounded-xl bg-[#EEF4FF] text-[15px] font-semibold text-[#1A5FCC] active:opacity-70"
@@ -139,8 +140,8 @@ function EmptyMyDrinks() {
   return (
     <div className="flex flex-col items-center justify-center py-10 px-4 gap-3">
       <div className="w-14 h-14 rounded-full bg-[#E0EEFF] flex items-center justify-center"><IcoStar /></div>
-      <p className="text-[19px] font-semibold text-[#1C1C1A] text-center">No custom drinks yet</p>
-      <p className="text-[17px] text-[#56524F] text-center leading-relaxed">Tap &quot;Add Manually&quot; above to save your own drinks here.</p>
+      <p className="text-[19px] font-semibold text-[#1C1C1A] text-center">No saved drinks yet</p>
+      <p className="text-[17px] text-[#56524F] text-center leading-relaxed">Save a drink while recording to keep it here for quicker use next time.</p>
     </div>
   )
 }
@@ -149,7 +150,7 @@ function EmptySearch({ query }: { query: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-10 px-4 gap-2">
       <p className="text-[19px] font-semibold text-[#1C1C1A] text-center">No results for &quot;{query}&quot;</p>
-      <p className="text-[17px] text-[#56524F] text-center">Try a different name or add it manually.</p>
+      <p className="text-[17px] text-[#56524F] text-center">Try a different name or record it manually.</p>
     </div>
   )
 }
@@ -159,7 +160,7 @@ function RecordHelp({ onClose }: { onClose: () => void }) {
     ['Search', 'Use the search bar above to enter a drink name, brand, or product and find a matching drink.'],
     ['Scan a barcode', 'Tap Scan Barcode to scan the bottle or can and look for a matching product.'],
     ['Browse', 'Browse by category, such as Beer, Wine, Spirits, Cider, RTD, or Other, then select the drink you want to record.'],
-    ['My Drinks', 'Find drinks you have added before for quicker recording.'],
+    ['My Drinks', 'Find drinks you have saved before for quicker recording. Drinks can be saved from the database or from manual recording.'],
   ] as const
 
   return (
@@ -177,7 +178,7 @@ function RecordHelp({ onClose }: { onClose: () => void }) {
           <div>
             <p className="text-[17px] font-semibold text-[#1C1C1A] mb-1">Can&apos;t find your drink?</p>
             <p className="text-[16px] text-[#56524F] leading-relaxed">
-              Select <strong>Add Manually</strong>. You can <strong>Scan Label</strong> to help fill in details such as ABV and container size, or enter the information yourself. The drink will be saved to <strong>My Drinks</strong> for next time.
+              Select <strong>Record Manually</strong>. Enter the drink details and how much you drank in one flow. You can optionally save the drink to <strong>My Drinks</strong> for next time.
             </p>
           </div>
           <p className="text-[16px] text-[#56524F] leading-relaxed">After selecting a drink, enter how much you drank and tap <strong>Record Drink</strong>.</p>
@@ -189,7 +190,7 @@ function RecordHelp({ onClose }: { onClose: () => void }) {
 }
 
 export default function RecordPage({
-  onAddManually,
+  onRecordManually,
   onSelectDrink,
   onEditDrink,
   onDeleteDrink,
@@ -198,8 +199,8 @@ export default function RecordPage({
   initialQuery = '',
   onBrowseStateChange,
 }: {
-  onAddManually: () => void
-  onSelectDrink: (drink: DrinkDefinition) => void
+  onRecordManually: () => void
+  onSelectDrink: (drink: DrinkDefinition, source: RecordDrinkSource) => void
   onEditDrink: (drink: DrinkDefinition) => void
   onDeleteDrink: (drinkId: string) => void
   myDrinks?: DrinkDefinition[]
@@ -264,9 +265,9 @@ export default function RecordPage({
             <IcoBarcode />
             <span className="text-[17px] font-semibold text-[#1A5FCC]">Scan Barcode</span>
           </button>
-          <button className="flex-1 flex items-center justify-center gap-1.5 h-14 rounded-xl bg-[#EEF4FF] active:opacity-75 transition-opacity" onClick={onAddManually}>
+          <button className="flex-1 flex items-center justify-center gap-1.5 h-14 rounded-xl bg-[#EEF4FF] active:opacity-75 transition-opacity" onClick={onRecordManually}>
             <IcoPlus />
-            <span className="text-[17px] font-semibold text-[#1A5FCC]">Add Manually</span>
+            <span className="text-[17px] font-semibold text-[#1A5FCC]">Record Manually</span>
           </button>
         </div>
       </div>
@@ -301,15 +302,16 @@ export default function RecordPage({
           ) : (
             <div className="record-drink-grid divide-y divide-[#F0F0F0] md:divide-y-0">
               {filteredDrinks.map((drink) => {
-                const isCustom = activeCategory === 'My Drinks'
+                const isSavedDrink = activeCategory === 'My Drinks'
+                const source: RecordDrinkSource = isSavedDrink ? 'my-drinks' : 'database'
                 return (
                   <DrinkItem
                     key={drink.id}
                     drink={drink}
-                    isCustom={isCustom}
-                    onSelect={() => onSelectDrink(drink)}
-                    onEdit={isCustom ? () => onEditDrink(drink) : undefined}
-                    onDelete={isCustom ? () => setPendingDelete(drink) : undefined}
+                    isSaved={isSavedDrink}
+                    onSelect={() => onSelectDrink(drink, source)}
+                    onEdit={isSavedDrink ? () => onEditDrink(drink) : undefined}
+                    onDelete={isSavedDrink ? () => setPendingDelete(drink) : undefined}
                   />
                 )
               })}
