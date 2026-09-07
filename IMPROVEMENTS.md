@@ -106,12 +106,12 @@ These require later product/data/integration work and are not faked in this buil
 
 ## Mobile web fixes — v2.2
 
-- Removed the simulated iOS status bar from the deployed React application. The Figma prototype remains unchanged.
+- Removed the simulated iOS status bar from the deployed React application.
 - Switched the app shell to the dynamic mobile viewport (`100dvh`) and enabled safe-area handling for iPhone.
 - Updated the bottom navigation to respect `safe-area-inset-bottom`.
 - Added consistent bottom clearance to scrollable screens so content is not hidden behind the fixed navigation.
 - Changed Home from a clipped single-screen layout to a vertically scrollable mobile-web layout. All four Home feature actions can now be reached on shorter Safari viewports without shrinking the design.
-- Preserved the Alrecord browser title in `.figma/make/site.json`.
+- Preserved the existing Alrecord browser title.
 - Date/time picker behaviour was intentionally left unchanged in this pass.
 
 ## v2.2.1 Record mobile spacing
